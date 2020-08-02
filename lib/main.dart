@@ -1,134 +1,199 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+import 'create_farmer.dart';
+import 'search_farmers.dart';
+import 'welcome_screen.dart';
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+void main() => runApp(FarmSuiteApp());
+
+class FarmSuiteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hover SDK',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'hover SDK'),
+      title: "FarmSuite",
+      routes: {
+        '/': (context) => LoginScreen(),
+        '/welcome': (context) => WelcomeScreen(),
+        '/search-farmers': (context) => FarmerSearchScreen(),
+        '/create-farmer': (context) => FarmerCreateScreen()
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final _formKey = GlobalKey<FormState>();
-
-  TextEditingController phoneNumberController = TextEditingController();
-  TextEditingController amountController = TextEditingController();
-
-  static const _hover = const MethodChannel('kikoba.co.tz/hover');
-  String _ActionResponse = 'Waiting for Response...';
-  Future<dynamic> sendMoney(var phoneNumber, amount) async {
-    var sendMap = <String, dynamic>{
-      'phoneNumber': "phoneNumber",
-      'amount': amount,
-    };
-// response waits for result from java code
-    String response = "";
-    try {
-      final String result = await _hover.invokeMethod('sendMoney', sendMap);
-      response = result;
-    } on PlatformException catch (e) {
-      response = "Failed to Invoke: '${e.message}'.";
-    }
-    _ActionResponse = response;
-  }
-
+class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Widget _buildNumberTextField() {
-      return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-          child: TextFormField(
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-            ],
-            controller: phoneNumberController,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter phone number';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Namba ya simu',
-              prefix: Text('+255'),
-              suffixIcon: Icon(Icons.dialpad),
-            ),
-            keyboardType: TextInputType.numberWithOptions(),
-          ));
-    }
-
-    Widget _buildAmountTextField() {
-      return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-          child: TextFormField(
-            controller: amountController,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter amount';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              prefix: Text('Tsh'),
-              labelText: 'Kiasi',
-            ),
-            keyboardType: TextInputType.numberWithOptions(),
-          ));
-    }
-
-    Widget _buildTuma() {
-      return Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              _buildNumberTextField(),
-              _buildAmountTextField(),
-              RaisedButton(
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    sendMoney(
-                        phoneNumberController.text, amountController.text);
-                  }
-                },
-                child: Text("send Money"),
-              ),
-              Text(_ActionResponse),
-            ],
-          ));
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Snack bar'),
       ),
+      backgroundColor: Colors.grey[200],
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _buildTuma(),
-          ],
+        child: SizedBox(
+          width: 400,
+          child: Card(
+            child: LoginForm(),
+          ),
         ),
       ),
     );
   }
+}
+
+class LoginForm extends StatefulWidget {
+  @override
+  _LoginFormState createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  final _userNameTextController = TextEditingController();
+  final _passwordTextController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  /// HOVER OPS
+  ///
+
+  static const ussd_channel = const MethodChannel('farmsuite.use.hover/ussd');
+  String _actionResponse = 'Waiting for Response...';
+
+  Future<dynamic> loginUser(var username, password) async {
+    var sendMap = <String, dynamic>{
+      'username': username,
+      'password': password,
+    };
+
+    /// response waits for result from java code
+    String response = "";
+    try {
+      final String result =
+          await ussd_channel.invokeMethod('loginUser', sendMap);
+      response = result;
+    } on PlatformException catch (e) {
+      response = "Failed to Invoke: '${e.message}'.";
+    }
+
+    // _ActionResponse = response;
+    setState(() {
+      _actionResponse = response;
+    });
+  }
+
+  /*static const platform = const MethodChannel('samples.flutter.dev/battery');
+  // Get battery level.
+  String _batteryLevel = 'Unknown battery level.';
+
+  Future<void> _getBatteryLevel() async {
+    String batteryLevel;
+    try {
+      final int result = await platform.invokeMethod('getBatteryLevel');
+      batteryLevel = 'Battery level at $result % .';
+    } on PlatformException catch (e) {
+      batteryLevel = "Failed to get battery level: '${e.message}'.";
+    }
+
+    setState(() {
+      _batteryLevel = batteryLevel;
+    });
+  }*/
+
+  ///
+  /// HOVER OPS
+
+  double _formProgress = 0;
+
+  void _updateFormProgress() {
+    var progress = 0.0;
+    var controllers = [_userNameTextController, _passwordTextController];
+
+    for (var controller in controllers) {
+      if (controller.value.text.isNotEmpty) {
+        progress += 1 / controllers.length;
+      }
+    }
+
+    setState(() {
+      _formProgress = progress;
+    });
+  }
+
+  void _showWelcomeScreen() {
+    Navigator.of(context).pushNamed('/welcome');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      onChanged: _updateFormProgress,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image(image: AssetImage('logo.png'), height: 150, width: 250),
+          LinearProgressIndicator(value: _formProgress),
+          Text('Login', style: Theme.of(context).textTheme.headline4),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: TextFormField(
+              controller: _userNameTextController,
+              decoration: InputDecoration(
+                hintText: 'Username',
+                border: OutlineInputBorder(),
+                labelText: 'Username',
+                suffixIcon: Icon(Icons.supervised_user_circle),
+              ),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(50),
+              ],
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter your Username';
+                }
+                return null;
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(5.0),
+            child: TextFormField(
+              controller: _passwordTextController,
+              decoration: InputDecoration(
+                  hintText: 'Password',
+                  border: OutlineInputBorder(),
+                  labelText: 'Password',
+                  suffixIcon: Icon(Icons.lock)),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(15),
+              ],
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter your Password';
+                }
+                return null;
+              },
+              obscureText: true,
+              obscuringCharacter: '*',
+            ),
+          ),
+          FlatButton(
+            color: Colors.green,
+            textColor: Colors.white,
+            // onPressed: _formProgress == 1 ? _showWelcomeScreen : null,
+            onPressed: () {
+              if (_formKey.currentState.validate()) {
+                loginUser(
+                    _userNameTextController.text, _passwordTextController.text);
+              }
+              /*if (_formKey.currentState.validate()) {
+                _getBatteryLevel();
+              }*/
+            },
+            child: Text('Login'),
+          ),
+          // Text(_batteryLevel),
+        ],
+      ),
+    );
+  } // end the build method
 }

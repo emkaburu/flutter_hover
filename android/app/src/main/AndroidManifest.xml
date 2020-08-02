@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hover.use.hover">
+    package="farmsuite.use.hover">
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
@@ -8,7 +8,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="hover"
+        android:label="FarmSuite"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -26,7 +26,7 @@
                 android:value="true" />
             <meta-data
                 android:name="com.hover.ApiKey"
-                android:value="323a6fe35067d801e224c60ef5ee52ee"/>
+                android:value="fca52468cb8de4021e6bed58f83b2098"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
