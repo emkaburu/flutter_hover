@@ -27,7 +27,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Snack bar'),
+        title: const Text('FarmSuite Mobile'),
       ),
       backgroundColor: Colors.grey[200],
       body: Center(
@@ -52,11 +52,35 @@ class _LoginFormState extends State<LoginForm> {
   final _passwordTextController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  @override
+  void initState() {
+    getActions();
+    super.initState();
+  }
+
   /// HOVER OPS
   ///
 
+  static const getactions_channel =
+      const MethodChannel('farmsuite.use.hover/getactions');
   static const ussd_channel = const MethodChannel('farmsuite.use.hover/ussd');
   String _actionResponse = 'Waiting for Response...';
+  String _downloadActionsResponse = "Initializing App ...";
+
+  Future<dynamic> getActions() async {
+    String response = "";
+    try {
+      final String initialize_result =
+          await getactions_channel.invokeMethod('getActions');
+      response = initialize_result;
+    } on PlatformException catch (e) {
+      response = "Failed to Initialize: '${e.message}'.";
+    }
+
+    setState(() {
+      _downloadActionsResponse = response;
+    });
+  }
 
   Future<dynamic> loginUser(var username, password) async {
     var sendMap = <String, dynamic>{
@@ -191,7 +215,7 @@ class _LoginFormState extends State<LoginForm> {
             },
             child: Text('Login'),
           ),
-          // Text(_batteryLevel),
+          Text(_downloadActionsResponse),
         ],
       ),
     );

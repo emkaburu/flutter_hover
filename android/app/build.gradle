@@ -24,6 +24,12 @@ if (flutterVersionName == null) {
 apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     compileSdkVersion 28
 
@@ -41,6 +47,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['fs_hover_key']
+            keyPassword keystoreProperties['Bann6bch$']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['Bann6bch$']
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -53,10 +68,10 @@ android {
 flutter {
     source '../..'
 }
-repositories {
+/*repositories {
     mavenCentral()
     maven { url 'http://maven.usehover.com/releases' }
-}
+}*/
 dependencies {
 //    implementation('com.hover:android-sdk:1.3.1-noSMS') { transitive = true }
     implementation('com.hover:android-sdk:1.6.3') { transitive = true }
